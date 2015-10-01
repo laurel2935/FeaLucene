@@ -1,0 +1,7 @@
+1. different analyzer
+
+KeywordAnalyzer关键字分词器，把处理的字符串当作一个整体
+WhitespaceAnalyzer：仅仅按照空白分隔开
+SimpleAnalyzer：在非字母处分隔开，并小写化，它将丢弃所有数字。
+StopAnalyzer：与SimpleAnalyser相同，除此之外，去除英文中所有的stop words（如a the等），可以自己指定这个集合。
+StandardAnalyzer：较为高级的一个，能识别公司名字、E-mail地址、主机名等同时小写化并移除stop words。

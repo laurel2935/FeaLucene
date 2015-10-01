@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_FLucene/lib/lucene-codecs-5.3.0.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_FLucene/lib/lucene-core-5.3.0.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_FLucene/lib_mallet/mallet-deps.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_FLucene/lib_mallet/trove-2.0.2.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_FLucene/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_FLucene/lib/antlr-runtime-3.1.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_FLucene/lib/asm-5.0.4.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_FLucene/lib/asm-commons-5.0.4.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_FLucene/lib/jakarta-regexp-1.4.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/commons-math3-3.5/commons-math3-3.5-javadoc.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/commons-math3-3.5/commons-math3-3.5.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/DivRanking"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-core-0.28-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-core-0.28.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-simple-0.28-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-simple-0.28.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
