@@ -28,6 +28,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.archive.access.feature.IAccessor;
 import org.archive.access.index.DocData.DocStyle;
 import org.archive.access.utility.parser.HTMLParser;
 
@@ -46,7 +47,13 @@ import org.archive.access.utility.parser.HTMLParser;
  * doc.term.vector.offsets=true|FALSE<br/>
  * doc.store.body.bytes=true|FALSE //Store the body contents raw UTF-8 bytes as a field<br/>
  */
-public abstract class BasicDocMaker implements DocMaker {  
+public abstract class BasicDocMaker implements DocMaker {
+	private static HashSet<String> _stopWSet = new HashSet<>();
+	static{
+		_stopWSet.add("http");
+		_stopWSet.add("https");
+		_stopWSet.add("www");
+	}
   
   private int numDocsCreated = 0;
   protected boolean forever = false;
@@ -187,6 +194,10 @@ public abstract class BasicDocMaker implements DocMaker {
 	      //url: use VecTextField instead of StringField, since we will compute test similarity
 	      
 	      if(_indexedFieldSet.contains(DocData.ClickText_Field_2)){
+	    	  //String rawUrl = docData.getUrl();
+	    	  //String wordSequence = IAccessor.getTokenSequence(rawUrl, _stopWSet);
+	    	  
+		      //doc.add(new VecTextField(DocData.ClickText_Field_2, wordSequence, Field.Store.YES));
 		      doc.add(new VecTextField(DocData.ClickText_Field_2, docData.getUrl(), Field.Store.YES));
 	      }
 	      //title

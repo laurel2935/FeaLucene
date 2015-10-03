@@ -62,7 +62,7 @@ public class FRoot {
 			
 			_urlFile = "/Users/dryuhaitao/WorkBench/Corpus/DataSource_Raw/WebPage/TxtCollection_BasedOnAtLeast2Clicks/UrlsFromExtractedTexts_BasedOnAtLeast2Clicks.txt";
 			
-			_bufferDir = "/Users/dryuhaitao/WorkBench/CodeBench/Bench_Output/DataSet_ClickModel/Buffer/";
+			_bufferDir = "/Users/dryuhaitao/WorkBench/CodeBench/Bench_Output/DataSet_ClickModel/Buffer_WWW/";
 			
 			_ldaBufferDir = "/Users/dryuhaitao/WorkBench/CodeBench/Bench_Output/DataSet_ClickModel/LDABuffer/";
 			

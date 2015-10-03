@@ -181,7 +181,7 @@ public class IAccessor {
 	//Feature dimensions consist of 3 parts: <1> features for relevance ; <2> tensor based features for marginal relevance; <3> context information based features for marginal relevance
 	////////
 	//plus 3 context feature, i.e., rankPosition, priorClicks, disToLastClick
-		public static final int _FeatureLength_Context = 3;
+	public static final int _FeatureLength_Context = 3;
 		
 	//tf, idf, tfidf, bm25, attributes w.r.t. fields, plus three context feature
 	public static final int _releFeatureLength = 13 + _FeatureLength_Context;
@@ -1505,10 +1505,12 @@ public class IAccessor {
 		*/
 		
 		//7
+		/*
 		String inputStr = "1 http://www.docstoc.com/docs start a.html index&cpath mar http://web";
 		HashSet<String> stopSet = new HashSet<>();
 		stopSet.add("http");
 		System.out.println(IAccessor.getTokenSequence(inputStr, stopSet));
+		*/
 		
 		
 	}

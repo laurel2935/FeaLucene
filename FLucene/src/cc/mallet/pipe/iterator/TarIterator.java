@@ -43,6 +43,7 @@ public class TarIterator extends TarDoc implements Iterator<Instance> {
 		String ldaStr = null;
 		if(_ldaField.equals("url")){
 			ldaStr = this._currentDoc.getUrl();
+			//segmenting urls
 			ldaStr = IAccessor.getTokenSequence(ldaStr, _stopWSet);
 		}else if(_ldaField.equals("title")){
 			ldaStr = this._currentDoc.getTitle();

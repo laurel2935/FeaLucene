@@ -18,5 +18,11 @@
 	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-core-0.28.jar"/>
 	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-simple-0.28-sources.jar"/>
 	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-simple-0.28.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-dense64-0.28-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-dense64-0.28.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-denseC64-0.28-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-denseC64-0.28.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-equation-0.28-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/dryuhaitao/WorkBench/CodeBench/JarPool/jar_ClickModel/ejml-v0.28-libs/EJML-equation-0.28.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
