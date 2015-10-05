@@ -194,11 +194,11 @@ public abstract class BasicDocMaker implements DocMaker {
 	      //url: use VecTextField instead of StringField, since we will compute test similarity
 	      
 	      if(_indexedFieldSet.contains(DocData.ClickText_Field_2)){
-	    	  //String rawUrl = docData.getUrl();
-	    	  //String wordSequence = IAccessor.getTokenSequence(rawUrl, _stopWSet);
+	    	  String rawUrl = docData.getUrl();
+	    	  String wordSequence = IAccessor.getTokenSequence(rawUrl, _stopWSet);
 	    	  
-		      //doc.add(new VecTextField(DocData.ClickText_Field_2, wordSequence, Field.Store.YES));
-		      doc.add(new VecTextField(DocData.ClickText_Field_2, docData.getUrl(), Field.Store.YES));
+		      doc.add(new VecTextField(DocData.ClickText_Field_2, wordSequence, Field.Store.YES));
+		      //doc.add(new VecTextField(DocData.ClickText_Field_2, docData.getUrl(), Field.Store.YES));
 	      }
 	      //title
 	      if (_indexedFieldSet.contains(DocData.ClickText_Field_3) && docData.getTitle()!=null) {

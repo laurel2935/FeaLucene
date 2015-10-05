@@ -167,11 +167,38 @@ public class IAccessor {
 	
 	TFIDFSimilarity tfidfSim = new DefaultSimilarity();
 	
-	////per-query initialization////
+	//////
+	//buffer usage
+	/////
 	////batch access of docid & document w.r.t. index
-	private HashMap<String, Document> _docNo2IDocMap;
-	private HashMap<String, Integer> _docNo2IDocidMap;
+	//private static HashMap<String, Document> _docNo2IDocMap = new HashMap<>();
+	//private static HashMap<String, Integer>  _docNo2IDocidMap = new HashMap<>();
+	//docNo->LuceneDoc
+	private static HashMap<String, LuceneDoc>  _docNo2LuceneDocMap = new HashMap<>();
 	
+	//rawQuery->tokenList
+	private static HashMap<String, ArrayList<String>> _q2TokenListMap = new HashMap<>();
+	
+	//docid->terms
+	private static HashMap<Integer, Terms> _docid2TermsMap_ClickText_url = new HashMap<>();
+	private static HashMap<Integer, Terms> _docid2TermsMap_ClickText_title = new HashMap<>();	
+	private static HashMap<Integer, Terms> _docid2TermsMap_ClickText_content = new HashMap<>();
+	//token->statistics
+	private static HashMap<String, TermStatistics> _token2TermStatisticsMap_ClickText_url = new HashMap<>();
+	private static HashMap<String, TermStatistics> _token2TermStatisticsMap_ClickText_title = new HashMap<>();	
+	private static HashMap<String, TermStatistics> _token2TermStatisticsMap_ClickText_content = new HashMap<>();
+	//docno->topicDistribution
+	private static HashMap<String, ArrayList<Double>> _docNo2TopicDisMap_url = new HashMap<>();
+	private static HashMap<String, ArrayList<Double>> _docNo2TopicDisMap_title = new HashMap<>();	
+	private static HashMap<String, ArrayList<Double>> _docNo2TopicDisMap_content = new HashMap<>();
+	//field-specific allterms
+	private static Map<String,Integer> _allTerms_url = null;
+	private static Map<String,Integer> _allTerms_title = null;
+	private static Map<String,Integer> _allTerms_content = null;
+	//docNo->weighted term vector
+	private static HashMap<String, DocTVector> _docNo2TVectorMap_url = new HashMap<>();
+	private static HashMap<String, DocTVector> _docNo2TVectorMap_title = new HashMap<>();
+	private static HashMap<String, DocTVector> _docNo2TVectorMap_content = new HashMap<>();
 	
 	//buffering marginal utility features
 	//private SimpleTensor _mTensor = null;
@@ -202,10 +229,6 @@ public class IAccessor {
 		
 		//2
 		iniLDARele(fieldSpecificLDA, useLoadedModel);
-	}
-	
-	private void iniCommon(){
-		
 	}
 	
 	private void iniIndexRele(){
@@ -338,7 +361,7 @@ public class IAccessor {
 		}
 	}
 	
-	private int getDocID(DocStyle docStyle, String docNo){
+	private int getDocID_del(DocStyle docStyle, String docNo){
 		try {
 			Query keyQuery = _keyParser.parse(docNo);			
 		    TopDocs results = getIndexSearcher(docStyle).search(keyQuery, 2);
@@ -353,7 +376,12 @@ public class IAccessor {
 		return -1;
 	}
 	
+	
 	private ArrayList<String> getTokens(String rawQuery){
+		if(_q2TokenListMap.containsKey(rawQuery)){
+			return _q2TokenListMap.get(rawQuery);
+		}
+		
 		ArrayList<String> tokenList = new ArrayList<>();
 		try {			
 			TokenStream tokenStream = _rawQAnalyzer.tokenStream(null, new StringReader(rawQuery));
@@ -381,6 +409,7 @@ public class IAccessor {
 		*/
 		
 		if(tokenList.size()>0){
+			_q2TokenListMap.put(rawQuery, tokenList);
 			return tokenList;
 		}else{
 			return null;
@@ -439,35 +468,159 @@ public class IAccessor {
 		return tSequence.trim();		
 	}
 	
-	//////////
-	//per-query initialization
-	//////////
-	private void iniMaps(DocStyle docStyle, ArrayList<String> docNoList){
+	class LuceneDoc{
+		public int _docid;
+		public Document _iDoc;
 		
-		this._docNo2IDocMap = new HashMap<>();
-		this._docNo2IDocidMap = new HashMap<>();
-		
-		for(String docNo: docNoList){
+		LuceneDoc(int docid, Document iDoc){
+			this._docid = docid;
+			this._iDoc = iDoc;
+		}		
+	}
+	
+	private LuceneDoc getLuceneDoc(DocStyle docStyle, String docNo){
+		if(_docNo2LuceneDocMap.containsKey(docNo)){
+			return _docNo2LuceneDocMap.get(docNo);
+		}else{
+			LuceneDoc luceneDoc = null;
+			//
 			try {
 				Query keyQuery = _keyParser.parse(docNo);			
 			    TopDocs results = getIndexSearcher(docStyle).search(keyQuery, 2);
 			    int docid = results.scoreDocs[0].doc;			    		    
 			    Document iDoc = getIndexSearcher(docStyle).doc(docid);
 			    
-			    this._docNo2IDocMap.put(docNo, iDoc);
-			    this._docNo2IDocidMap.put(docNo, docid);
+			    luceneDoc = new LuceneDoc(docid, iDoc);
+			    _docNo2LuceneDocMap.put(docNo, luceneDoc);			    
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
 			}
+			return luceneDoc;
+		}	
+	}
+	
+	private Terms getTerms(DocStyle docStyle, String field, int docid){
+		HashMap<Integer, Terms> docid2TermsMap = getTermsMap(field);
+		//Terms terms
+		if(docid2TermsMap.containsKey(docid)){
+			return docid2TermsMap.get(docid);
+		}else{
+			Terms terms = null;			
+			try {
+				terms = getIndexReader(docStyle).getTermVector(docid, field);
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
+			
+			docid2TermsMap.put(docid, terms);			
+			return terms;
 		}		
 	}
 	//
-	/*
-	private void iniMTensor(ArrayList<String> docNoList){
-		_mTensor = new SimpleTensor(docNoList.size(), docNoList.size(), _mFeatureNum);
+	private HashMap<Integer, Terms> getTermsMap(String field){
+		
+		if(field.equals(DocData.ClickText_Field_2)){
+			
+			return _docid2TermsMap_ClickText_url;
+			
+		}else if(field.equals(DocData.ClickText_Field_3)){
+			
+			return _docid2TermsMap_ClickText_title;
+			
+		}else if(field.equals(DocData.ClickText_Field_4)){
+			
+			return _docid2TermsMap_ClickText_content;
+			
+		}else{
+			System.err.println("unaccepted field error!");
+			System.exit(0);
+			return null;
+		}
 	}
-	*/
+	//
+	private HashMap<String, TermStatistics> getTermStatisticsMap(String field){
+		
+		if(field.equals(DocData.ClickText_Field_2)){
+			
+			return _token2TermStatisticsMap_ClickText_url;
+			
+		}else if(field.equals(DocData.ClickText_Field_3)){
+			
+			return _token2TermStatisticsMap_ClickText_title;
+			
+		}else if(field.equals(DocData.ClickText_Field_4)){
+			
+			return _token2TermStatisticsMap_ClickText_content;
+			
+		}else{
+			System.err.println("unaccepted field error!");
+			System.exit(0);
+			return null;
+		}
+	}
+	//
+	private TermStatistics getTermStatistics(DocStyle docStyle, String field, String token){
+		HashMap<String, TermStatistics> token2TermStatisticsMap = getTermStatisticsMap(field);
+		
+		if(token2TermStatisticsMap.containsKey(token)){
+			return token2TermStatisticsMap.get(token);
+		}else{
+			TermStatistics termStatistics = null;
+			try {
+				Term dfTerm = new Term(field, token); 
+				termStatistics = getIndexSearcher(docStyle).termStatistics(dfTerm, TermContext.build(getIndexReader(docStyle).getContext(), dfTerm));
+				token2TermStatisticsMap.put(token, termStatistics);				
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
+			return termStatistics;
+		}
+	}
+	//
+	private HashMap<String, ArrayList<Double>> getTopicDisMap(String field){
+		if(field.equals(DocData.ClickText_Field_2)){
+			
+			return _docNo2TopicDisMap_url;
+			
+		}else if(field.equals(DocData.ClickText_Field_3)){
+			
+			return _docNo2TopicDisMap_title;
+			
+		}else if(field.equals(DocData.ClickText_Field_4)){
+			
+			return _docNo2TopicDisMap_content;
+			
+		}else{
+			System.err.println("unaccepted field error!");
+			System.exit(0);
+			return null;
+		}
+	}
+	//
+	private HashMap<String, DocTVector> getTVectorMap(String field){
+		
+		if(field.equals(DocData.ClickText_Field_2)){
+			
+			return _docNo2TVectorMap_url;
+			
+		}else if(field.equals(DocData.ClickText_Field_3)){
+			
+			return _docNo2TVectorMap_title;
+			
+		}else if(field.equals(DocData.ClickText_Field_4)){
+			
+			return _docNo2TVectorMap_content;
+			
+		}else{
+			System.err.println("unaccepted field error!");
+			System.exit(0);
+			return null;
+		}
+	}
+	
 	
 	//////////
 	//Relevance features
@@ -485,7 +638,8 @@ public class IAccessor {
 		
 		String [] fieldArray = getFields(docStyle);		
 		
-		int docID = getDocID(docStyle, docNo);
+		//int docID = getDocID(docStyle, docNo);
+		int docID = getLuceneDoc(docStyle, docNo)._docid;
 		ArrayList<String> tokenList = getTokens(rawQuery);
 		
 		for(String field: fieldArray){
@@ -555,7 +709,9 @@ public class IAccessor {
 			float tfSum = 0.0f;			
 			for(String token: tokenList){
 				try {
-					Terms terms = getIndexReader(docStyle).getTermVector(docid, field); 
+					//Terms terms = getIndexReader(docStyle).getTermVector(docid, field); 
+					Terms terms = getTerms(docStyle, field, docid);
+					
 					if (terms != null && terms.size() > 0) {
 						//access the terms for this field
 					    TermsEnum termsEnum = terms.iterator(); 
@@ -622,6 +778,7 @@ public class IAccessor {
 			for(String token: tokenList){
 				try {
 					Term dfTerm = new Term(field, token); 
+					
 					TermStatistics termStatistics = getIndexSearcher(docStyle).termStatistics(dfTerm,
 							TermContext.build(getIndexReader(docStyle).getContext(), dfTerm));
 					
@@ -655,7 +812,7 @@ public class IAccessor {
 		return idfList;
 	}
 	
-	public ArrayList<Float> getIDFList(boolean debug, DocStyle docStyle, int docid, ArrayList<String> tokenList){
+	public ArrayList<Float> getIDFList(boolean debug, DocStyle docStyle, ArrayList<String> tokenList){
 		ArrayList<Float> idfList = new ArrayList<>();
 		
 		String [] fieldArray = getFields(docStyle);		
@@ -664,9 +821,12 @@ public class IAccessor {
 			float idfSum = 0.0f;			
 			for(String token: tokenList){
 				try {
+					/*
 					Term dfTerm = new Term(field, token); 
 					TermStatistics termStatistics = getIndexSearcher(docStyle).termStatistics(dfTerm,
 							TermContext.build(getIndexReader(docStyle).getContext(), dfTerm));
+					*/
+					TermStatistics termStatistics = getTermStatistics(docStyle, field, token);
 					
 					if(debug){
 						idfSum += termStatistics.docFreq();
@@ -713,7 +873,8 @@ public class IAccessor {
 		
 		String [] fieldArray = getFields(docStyle);
 		
-		int docID = getDocID(docStyle, docNo);
+		//int docID = getDocID(docStyle, docNo);
+		int docID = getLuceneDoc(docStyle, docNo)._docid;
 		
 		float bm25Score;
 		for(String field: fieldArray){			
@@ -813,19 +974,25 @@ public class IAccessor {
 		RFeature rFeature = null;
 		try {
 			//get document & docid & tokenList
+			/*
 			Query keyQuery = _keyParser.parse(docNo);			
 		    TopDocs results = getIndexSearcher(docStyle).search(keyQuery, 2);
 		    ScoreDoc[] hits = results.scoreDocs;
 		    
 		    int docid = hits[0].doc;		    
 		    Document iDoc = getIndexSearcher(docStyle).doc(hits[0].doc);
+		    */
+			LuceneDoc luceneDoc = getLuceneDoc(docStyle, docNo);
+					
 		    ArrayList<String> tokenList = getTokens(rawQuery);
 		    
-		    ArrayList<Float> tfList = getTFList(debug, docStyle, docid, tokenList);
-		    ArrayList<Float> idfList = getIDFList(debug, docStyle, docid, tokenList);
+		    ArrayList<Float> tfList = getTFList(debug, docStyle, luceneDoc._docid, tokenList);
+		    ArrayList<Float> idfList = getIDFList(debug, docStyle, tokenList);
 		    ArrayList<Float> tfidfList = getTFIDFList(tfList, idfList);
-		    ArrayList<Float> bm25List = getBM25List(debug, docStyle, docid, rawQuery);
-		    ArrayList<Float> attList = getAttList(debug, docStyle, iDoc);
+		    
+		    ArrayList<Float> bm25List = getBM25List(debug, docStyle, luceneDoc._docid, rawQuery);
+		    
+		    ArrayList<Float> attList = getAttList(debug, docStyle, luceneDoc._iDoc);
 		    
 		    rFeature = new RFeature(rawQuery, docNo);
 		    rFeature.setTFList(tfList);
@@ -860,22 +1027,23 @@ public class IAccessor {
 		for(int k=0; k<fields.length; k++){
 			String field = fields[k];
 			
+			//field-specific docno->fieldText
 			HashMap<String, String> docNo2TxtMap = textCollection.getFieldMap(field);
 			
-			ArrayList<String> contentList = new ArrayList<>();			
-			for(String docNo: docNoList){				
-				contentList.add(docNo2TxtMap.get(docNo));
-			}
+			//ArrayList<String> contentList = new ArrayList<>();			
+			//for(String docNo: docNoList){				
+			//	contentList.add(docNo2TxtMap.get(docNo));
+			//}
 			
-			double [][] abTopicDivMatrix = new double[contentList.size()][contentList.size()];
+			double [][] abTopicDivMatrix = new double[docNoList.size()][docNoList.size()];
 			
-			for(int i=0; i<contentList.size()-1; i++){
-				String txtA = contentList.get(i);
-				double[] aTDistribution = getTopicDistribution(txtA, field);
+			for(int i=0; i<docNoList.size()-1; i++){
+				String docNoA = docNoList.get(i);
+				double[] aTDistribution = getTopicDistribution(docNo2TxtMap, docNoA, field);
 								
-				for(int j=i+1; j<contentList.size(); j++){
-					String txtB = contentList.get(j);					
-					double[] bTDistribution = getTopicDistribution(txtB, field);
+				for(int j=i+1; j<docNoList.size(); j++){
+					String docNoB = docNoList.get(j);					
+					double[] bTDistribution = getTopicDistribution(docNo2TxtMap, docNoB, field);
 					
 					/*
 					System.out.println("topic distribution of "+docNoList.get(j));
@@ -960,28 +1128,50 @@ public class IAccessor {
 		return dis;
 	}
 	//	
-	private double[] getTopicDistribution(String rawStr, String field){
-		if(debug){
-			System.out.println(field+" : "+rawStr);
-		}
+	private double[] getTopicDistribution(HashMap<String, String> docNo2TxtMap, String docNo, String field){
 		
-		double[] topicDistribution = null;
-		try {
-			InstanceList targetIntList = new InstanceList(_serialPipe);
-			targetIntList.addThruPipe(new Instance(rawStr, null, null, null));
-			topicDistribution = getLDAModel(field).getInferencer().getSampledDistribution(targetIntList.get(0), 50, 1, 5);
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-		}
+		HashMap<String, ArrayList<Double>> docNo2TopicDisMap = getTopicDisMap(field);
 		
-		return topicDistribution;
+		if(docNo2TopicDisMap.containsKey(docNo)){			
+			ArrayList<Double> topicDis = docNo2TopicDisMap.get(docNo);	
+			return toDArray(topicDis);
+		}else{
+			double[] topicDistribution = null;
+			try {
+				InstanceList targetIntList = new InstanceList(_serialPipe);
+				targetIntList.addThruPipe(new Instance(docNo2TxtMap.get(docNo), null, null, null));
+				topicDistribution = getLDAModel(field).getInferencer().getSampledDistribution(targetIntList.get(0), 50, 1, 5);
+				
+				ArrayList<Double> topicDis = toDList(topicDistribution);
+				docNo2TopicDisMap.put(docNo, topicDis);
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
+			
+			return topicDistribution;
+		}
 	}
+	
+	private static ArrayList<Double> toDList(double[] dArray){
+		ArrayList<Double> dList = new ArrayList<>();
+		for(double d: dArray){
+			dList.add(d);
+		}
+		return dList;
+	}
+	private static double[] toDArray(ArrayList<Double> dList) {
+		double[] dArray = new double[dList.size()];
+		for(int i=0; i<dList.size(); i++){
+			dArray[i] = dList.get(i);
+		}
+		return dArray;
+	}
+	
 	
 	////2 Text Diversity (e.g., text dissimilarity, say 1-consine similarity), 
 	//expanded to title, anchor text, body, whole document
 
-	////2
 	public void setTextDiv(boolean debug, DocStyle docStyle, ArrayList<String> docNoList, int head, SimpleTensor mTensor){
 		String [] fields = getFields(docStyle);
 		
@@ -1036,14 +1226,13 @@ public class IAccessor {
 	}
 	
 	///
-	private ArrayList<DocTVector> getDocTVectors(DocStyle docStyle, Map<String,Integer> allTerm,
-			ArrayList<String> docNoList, String field){
+	private ArrayList<DocTVector> getDocTVectors(DocStyle docStyle, Map<String,Integer> allTerm, ArrayList<String> docNoList, String field){
 		
 		ArrayList<DocTVector> docTVectorList = new ArrayList<>();
 		
 		for(String docNo: docNoList){
 			DocTVector docTVector = geDocTVector(docStyle, allTerm, docNo, field);
-			docTVector.normalize();
+			//docTVector.normalize();
 			
 			docTVectorList.add(docTVector);
 		}
@@ -1051,68 +1240,96 @@ public class IAccessor {
 		return docTVectorList;
 	}
 	
+	
 	private DocTVector geDocTVector(DocStyle docStyle, Map<String,Integer> allTerm, String docNo, String field){
-		DocTVector docTVector = new DocTVector(allTerm);
+		HashMap<String, DocTVector> docNo2TVectorMap = getTVectorMap(field);
 		
-		int docid = _docNo2IDocidMap.get(docNo);
-		try {
-			Terms terms = getIndexReader(docStyle).getTermVector(docid, field);
+		if(docNo2TVectorMap.containsKey(docNo)){
+			return docNo2TVectorMap.get(docNo);
+		}else{
+			DocTVector docTVector = new DocTVector(allTerm);		
+			//int docid = _docNo2IDocidMap.get(docNo);
+			int docid = getLuceneDoc(docStyle, docNo)._docid;
+			try {
+				Terms terms = getIndexReader(docStyle).getTermVector(docid, field);
+				
+				if (terms != null && terms.size() > 0) {
+					//access the terms for this field
+				    TermsEnum termsEnum = terms.iterator(); 
+				    BytesRef refTerm = null;
+				    //explore the terms for this field
+				    while ((refTerm = termsEnum.next()) != null) {
+				    	// enumerate through documents, in this case only one
+				        DocsEnum docsEnum = termsEnum.docs(null, null);
+				        
+				        int docIdEnum, tFre=0;					        
+				        while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+				        	//get the term frequency in the document
+				            tFre = docsEnum.freq();
+				        }
+				        
+				        docTVector.setEntry(allTerm, refTerm.utf8ToString(), tFre);			    	
+				    }
+				}			
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
 			
-			if (terms != null && terms.size() > 0) {
-				//access the terms for this field
-			    TermsEnum termsEnum = terms.iterator(); 
-			    BytesRef refTerm = null;
-			    //explore the terms for this field
-			    while ((refTerm = termsEnum.next()) != null) {
-			    	// enumerate through documents, in this case only one
-			        DocsEnum docsEnum = termsEnum.docs(null, null);
-			        
-			        int docIdEnum, tFre=0;					        
-			        while ((docIdEnum = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-			        	//get the term frequency in the document
-			            tFre = docsEnum.freq();
-			        }
-			        
-			        docTVector.setEntry(refTerm.utf8ToString(), tFre);			    	
-			    }
-			}			
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-		}
-		
-		//if(debug){
-		//	System.out.println(docNo+"\t"+docTVector.toString());
-		//}
-		
-		return docTVector;		
+			//if(debug){
+			//	System.out.println(docNo+"\t"+docTVector.toString());
+			//}
+			
+			docTVector.normalize();
+			docNo2TVectorMap.put(docNo, docTVector);
+			return docTVector;
+		}				
 	}
 	
 	private double consineSim(DocTVector docTVector_1, DocTVector docTVector_2){
 		double vDotPro = docTVector_1._docTVector.dotProduct(docTVector_2._docTVector);
 		double normPro = docTVector_1._docTVector.getNorm() * docTVector_2._docTVector.getNorm();
-		return vDotPro/normPro;
+		
+		if(0 == normPro){
+			return 0;
+		}else{
+			return vDotPro/normPro;
+		}		
 	}
 	
-	private Map<String,Integer> getAllTerms(DocStyle docStyle, String field){
+	private static Map<String,Integer> getAllTerms(DocStyle docStyle, String termfield){
+		if(termfield.equals(DocData.ClickText_Field_2)){
+			if(null == _allTerms_url){
+				_allTerms_url = iniAllTerms(docStyle, DocData.ClickText_Field_2);
+			}
+			
+			return _allTerms_url;
+			
+		}else if(termfield.equals(DocData.ClickText_Field_3)){
+			if(null == _allTerms_title){
+				_allTerms_title = iniAllTerms(docStyle, DocData.ClickText_Field_3);
+			}
+			
+			return _allTerms_title;
+			
+		}else if(termfield.equals(DocData.ClickText_Field_4)){
+			if(null == _allTerms_content){
+				_allTerms_content = iniAllTerms(docStyle, DocData.ClickText_Field_4);
+			}
+			
+			return _allTerms_content;
+			
+		}else{
+			System.err.println("unaccepted field error!");
+			System.exit(0);
+			return null;
+		}
+	}
+	
+	private static Map<String,Integer> iniAllTerms(DocStyle docStyle, String field){
 		Map<String,Integer> allTerms = new HashMap<>();
 		int pos = 0;
 		try {			
-			//del
-			/*			
-			int maxDocid = getIndexReader(docStyle).maxDoc();
-	        for (int docid = 0; docid < maxDocid; docid++) {
-	            Terms vector = getIndexReader(docStyle).getTermVector(docid, field);
-	            TermsEnum termsEnum = null;
-	            termsEnum = vector.iterator();
-	            BytesRef refTerm = null;
-	            while ((refTerm = termsEnum.next()) != null) {
-	                String termStr = refTerm.utf8ToString();
-	                allTerms.put(termStr, pos++);
-	            }
-	        }
-	        */
-			
 			Fields fields = MultiFields.getFields(getIndexReader(docStyle));
 			Terms terms = fields.terms(field);
 			
@@ -1182,7 +1399,7 @@ public class IAccessor {
 		SimpleTensor mTensor = new SimpleTensor(docNoList.size(), docNoList.size(), _marFeatureLength_Tensor);
 		
 		//per-query ini
-		iniMaps(docStyle, docNoList);
+		//iniMaps(docStyle, docNoList);
 		
 		//1
 		////using mallet
@@ -1282,9 +1499,7 @@ public class IAccessor {
 			marTensor.setSlice(priorK, new SimpleMatrix(simMatrix));
 			
 			key2MarFeatureMap.put(key, marTensor);
-		}
-		
-		
+		}		
 		
 		return key2MarFeatureMap;		
 	}
