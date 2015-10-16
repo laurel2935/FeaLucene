@@ -7,8 +7,11 @@ import org.archive.access.index.DocData;
 
 public class TextCollection {
 	public HashSet<String> _docNoSet;
+	//docNo->
 	public HashMap<String, String> _docNo2UrlMap;
+	//docNo->
 	public HashMap<String, String> _docNo2TitleMap;
+	//docNo->
 	public HashMap<String, String> _docNo2ContentMap;
 	
 	public TextCollection(HashSet<String> docNoSet, HashMap<String, String> docNo2UrlMap, 

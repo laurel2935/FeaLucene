@@ -16,6 +16,8 @@ public class TarIterator extends TarDoc implements Iterator<Instance> {
 		_stopWSet.add("http");
 		_stopWSet.add("https");
 		_stopWSet.add("www");
+		_stopWSet.add("html");
+		_stopWSet.add("htm");
 	}
 	
 	

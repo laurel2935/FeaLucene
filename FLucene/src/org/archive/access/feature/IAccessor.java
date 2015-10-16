@@ -208,15 +208,15 @@ public class IAccessor {
 	//Feature dimensions consist of 3 parts: <1> features for relevance ; <2> tensor based features for marginal relevance; <3> context information based features for marginal relevance
 	////////
 	//plus 3 context feature, i.e., rankPosition, priorClicks, disToLastClick
-	public static final int _FeatureLength_Context = 3;
+	private static final int _FeatureLength_Context = 3;
 		
 	//tf, idf, tfidf, bm25, attributes w.r.t. fields, plus three context feature
 	public static final int _releFeatureLength = 13 + _FeatureLength_Context;
 	
 	//corresponds to the slice number of the marginal tensor
-	public static final int _marFeatureLength_Tensor = 6;	
+	private static final int _marFeatureLength_Tensor = 6;	
 	//i.e., total length w.r.t. marginal relevance
-	public static final int _marFeatureLength = _marFeatureLength_Tensor + _FeatureLength_Context;
+	public static final int marFeatureLength = _marFeatureLength_Tensor + _FeatureLength_Context;
 	
 	//private static final int _mFeatureNum = 15;
 	
@@ -933,11 +933,14 @@ public class IAccessor {
 		return bm25List;
 	}
 	
-	public ArrayList<Float> getAttList(boolean debug, DocStyle docStyle, Document iDoc){	
+	public ArrayList<Float> getAttList(boolean debug, DocStyle docStyle, String docNo, TextCollection textCollection){	
 		ArrayList<Float> attList = new ArrayList<>();		
 		String [] fieldArray = getFields(docStyle);
+		
 		//1
-		String url = iDoc.get(fieldArray[0]);
+		//String url = iDoc.get(fieldArray[0]);
+		String url = textCollection.getFieldMap(fieldArray[0]).get(docNo);
+		
 		//2
 		//String title = iDoc.get(fieldArray[2]);
 		
@@ -970,7 +973,7 @@ public class IAccessor {
 		return num;
 	}
 	
-	public RFeature getRFeature(boolean debug, DocStyle docStyle, String rawQuery, String docNo){
+	public RFeature getRFeature(boolean debug, DocStyle docStyle, String rawQuery, String docNo, TextCollection textCollection){
 		RFeature rFeature = null;
 		try {
 			//get document & docid & tokenList
@@ -992,7 +995,7 @@ public class IAccessor {
 		    
 		    ArrayList<Float> bm25List = getBM25List(debug, docStyle, luceneDoc._docid, rawQuery);
 		    
-		    ArrayList<Float> attList = getAttList(debug, docStyle, luceneDoc._iDoc);
+		    ArrayList<Float> attList = getAttList(debug, docStyle, docNo, textCollection);
 		    
 		    rFeature = new RFeature(rawQuery, docNo);
 		    rFeature.setTFList(tfList);
@@ -1206,7 +1209,7 @@ public class IAccessor {
 					
 					//jDocTVector.getCommonTerms(iDocTVector);
 					
-					ijTextDivMatrix[i][j] = consineSim(iDocTVector, jDocTVector);
+					ijTextDivMatrix[i][j] = 1 - consineSim(iDocTVector, jDocTVector);
 					ijTextDivMatrix[j][i] = ijTextDivMatrix[i][j];
 					
 					if(debug){						

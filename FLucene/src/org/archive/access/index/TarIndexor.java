@@ -118,13 +118,13 @@ public class TarIndexor {
 		//TarIndexor tarIndexor = new TarIndexor();
 		//tarIndexor.pocess(DocStyle.ClickText, true);
 		
-		//2
+		//2 application
 		//index extracted text files w.r.t. fields: url, title, text
-		///*
+		/*
 		TarIndexor tarIndexor = new TarIndexor();
 		String [] indexedfields = {DocData.ClickText_Field_2, DocData.ClickText_Field_3, DocData.ClickText_Field_4};
 		tarIndexor.pocess(FRoot._textDataDir, DocStyle.ClickText, indexedfields, FRoot._clickText_IndexDir, true);
-		//*/
+		*/
 		
 	}
 }

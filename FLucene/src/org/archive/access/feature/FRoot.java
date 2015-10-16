@@ -23,6 +23,7 @@ public class FRoot {
 	
 	////buffer
 	public static String _bufferDir;
+	public static String _bufferParaDir;
 	
 	//the pre-filtered set of urls based on all the downloaded htmls w.r.t. sessionsAtLeast2Clicks
 	public static String _file_UrlsFromExtractedTexts;
@@ -62,7 +63,8 @@ public class FRoot {
 			
 			_urlFile = "/Users/dryuhaitao/WorkBench/Corpus/DataSource_Raw/WebPage/TxtCollection_BasedOnAtLeast2Clicks/UrlsFromExtractedTexts_BasedOnAtLeast2Clicks.txt";
 			
-			_bufferDir = "/Users/dryuhaitao/WorkBench/CodeBench/Bench_Output/DataSet_ClickModel/Buffer_WWW/";
+			_bufferDir     = "/Users/dryuhaitao/WorkBench/CodeBench/Bench_Output/DataSet_ClickModel/Buffer_WWW/";
+			_bufferParaDir = "/Users/dryuhaitao/WorkBench/CodeBench/Bench_Output/DataSet_ClickModel/Buffer_Paras/";
 			
 			_ldaBufferDir = "/Users/dryuhaitao/WorkBench/CodeBench/Bench_Output/DataSet_ClickModel/LDABuffer/";
 			
